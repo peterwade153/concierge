@@ -19,3 +19,9 @@ A Local Restaurant Recommendation Agent, to recommend fine dining spots in speci
 4. Create a `.env` file from the `.env.sample` file. 
 
 5. Replace the variables in the sample file with the actual variables e.g. API KEY etc. Required generating a GEMINI_API_KEY via Google AI Studio @ https://aistudio.google.com/apikey or OPENROUTER_API_KEY
+
+
+## Run app
+    ```bash
+    python main.py
+    ```
