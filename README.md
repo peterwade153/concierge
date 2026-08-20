@@ -22,6 +22,6 @@ A Local Restaurant Recommendation Agent, to recommend fine dining spots in speci
 
 
 ## Run app
-    ```bash
+```bash
     python main.py
-    ```
+```
