@@ -1,5 +1,8 @@
 import os
 import json
+
+from typing import Optional
+
 from openai import OpenAI
 from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 from agent.schema import RestaurantRecommendations
@@ -12,6 +15,8 @@ class RestaurantAgent:
             base_url="https://openrouter.ai/api/v1",
             api_key=os.environ.get("OPENROUTER_API_KEY"),
         )
+        if not os.environ.get("OPENROUTER_API_KEY"):
+            raise ValueError("OPENROUTER_API_KEY environment variable is not set.")
         self.model_name = "meta-llama/llama-4-scout"
 
         self.system_instruction = (
@@ -28,7 +33,7 @@ class RestaurantAgent:
             {"role": "system", "content": self.system_instruction}
         ]
 
-    def ask(self, user_query: str):
+    def ask(self, user_query: str) -> Optional[str]:
         try:
             print(f"\n[User Query]: {user_query}")
             self.messages.append({"role": "user", "content": user_query})
@@ -36,7 +41,7 @@ class RestaurantAgent:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=self.messages,
-                tools=self.tools if self.tools else None,
+                tools=self.tools,
                 temperature=0.1,
                 response_format={"type": "json_object"},
             )
@@ -46,7 +51,11 @@ class RestaurantAgent:
             # Process tool calls in a loop until the model returns a final text response
             while response_message.tool_calls:
                 # Add the assistant's request (with tool calls) to history
-                self.messages.append(response_message)
+                self.messages.append({
+                    "role": "assistant",
+                    "content": response_message.content or "",
+                    "tool_calls": response_message.tool_calls,
+                })
 
                 for tool_call in response_message.tool_calls:
                     tool_name = tool_call.function.name
@@ -70,13 +79,16 @@ class RestaurantAgent:
                 response = self.client.chat.completions.create(
                     model=self.model_name,
                     messages=self.messages,
-                    tools=self.tools if self.tools else None,
+                    tools=self.tools,
                     temperature=0.1,
                     response_format={"type": "json_object"},
                 )
                 response_message = response.choices[0].message
 
             final_text = response_message.content
+            if final_text is None:
+                return None
+
             self.messages.append({"role": "assistant", "content": final_text})
 
             print(f"🤖 [Agent Recommendation]:\n{final_text}")
@@ -84,3 +96,4 @@ class RestaurantAgent:
 
         except Exception as e:
             print(f"Error occurred during OpenRouter request: {e}")
+        return None
