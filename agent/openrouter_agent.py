@@ -11,12 +11,13 @@ from agent.schema import RestaurantRecommendations
 class RestaurantAgent:
     def __init__(self):
 
+        if not os.environ.get("OPENROUTER_API_KEY"):
+            raise ValueError("OPENROUTER_API_KEY environment variable is not set.")
+
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=os.environ.get("OPENROUTER_API_KEY"),
         )
-        if not os.environ.get("OPENROUTER_API_KEY"):
-            raise ValueError("OPENROUTER_API_KEY environment variable is not set.")
         self.model_name = "meta-llama/llama-4-scout"
 
         self.system_instruction = (
@@ -33,7 +34,7 @@ class RestaurantAgent:
             {"role": "system", "content": self.system_instruction}
         ]
 
-    def ask(self, user_query: str) -> Optional[str]:
+    def ask(self, user_query: str) -> Optional[RestaurantRecommendations]:
         try:
             print(f"\n[User Query]: {user_query}")
             self.messages.append({"role": "user", "content": user_query})
@@ -89,10 +90,16 @@ class RestaurantAgent:
             if final_text is None:
                 return None
 
+            try:
+                result = RestaurantRecommendations.model_validate_json(final_text)
+            except Exception as e:
+                print(f'Exception - {e}')
+                return None
+
             self.messages.append({"role": "assistant", "content": final_text})
 
-            print(f"🤖 [Agent Recommendation]:\n{final_text}")
-            return final_text
+            print(f"🤖 [Agent Recommendation]:\n{result.model_dump_json(indent=2)}")
+            return result
 
         except Exception as e:
             print(f"Error occurred during OpenRouter request: {e}")

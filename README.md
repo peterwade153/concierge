@@ -21,7 +21,16 @@ A Local Restaurant Recommendation Agent, to recommend fine dining spots in speci
 5. Replace the variables in the sample file with the actual variables e.g. API KEY etc. Required generating a GEMINI_API_KEY via Google AI Studio @ https://aistudio.google.com/apikey or OPENROUTER_API_KEY
 
 
-## Run app
+## Start Server
 ```bash
-    python main.py
+    python api/run.py
+```
+Post Request endpoint - /recommend
+
+
+sample payload
+``` json
+   {
+      "query": "Find me a good spot for Asian food around the Ntinda or Nakawa neighborhood."
+   }
 ```
