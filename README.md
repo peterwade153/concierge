@@ -1,6 +1,7 @@
 # Concierge
 
-A Local Restaurant Recommendation Agent, to recommend fine dining spots in specific neighborhood.
+A Restaurant Recommendation Agent, to recommend fine dining spots in specific neighborhood. 
+Uses Nominatim to get Location Coordinates, and FourSquare to look up restaurants with those Coordinates in a given radius.
 
 ### Installation
 
@@ -25,12 +26,45 @@ A Local Restaurant Recommendation Agent, to recommend fine dining spots in speci
 ```bash
     python api/run.py
 ```
-Post Request endpoint - /recommend
-
+Post Request endpoint - `/recommend`
 
 sample payload
 ``` json
    {
       "query": "Find me a good spot for Asian food around the Ntinda or Nakawa neighborhood."
    }
+```
+
+sample response
+``` json
+{
+    "recommendation": {
+        "neighborhood_searched": "Kololo",
+        "recommended_spots": [
+            {
+                "name": "Mona Lisa Restaurant",
+                "location": "Kololo, Kampala",
+                "cuisine": [
+                    "Italian",
+                    "Continental"
+                ],
+                "price_range": "UGX 50,000 - 100,000",
+                "rating": 4.5,
+                "specialty": "Pasta and Pizza"
+            },
+            {
+                "name": "The Italian Kitchen",
+                "location": "Kololo, Kampala",
+                "cuisine": [
+                    "Italian"
+                ],
+                "price_range": "UGX 30,000 - 70,000",
+                "rating": 4.2,
+                "specialty": "Homemade pasta and wood-fired pizzas"
+            }
+        ],
+        "summary_verdict": "Enjoy authentic Italian cuisine at Mona Lisa Restaurant or The Italian Kitchen in Kololo."
+    }
+}
+
 ```

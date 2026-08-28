@@ -1,41 +1,11 @@
 from typing import Dict, List, Any
+import logging
+
+from agent.utils.nominatim import get_location_coordinates
+from agent.utils.foursquare import search_foursquare_restaurants, extract_cuisines
 
 
-RESTAURANT_DB = [
-    {
-        "name": "Olives Restaurant & Bar",
-        "location": "Naguru Dr, Nakawa",
-        "cuisine": "Continental, Pizza & Cocktails",
-        "price_range": "UGX 40,000 - 100,000",
-        "rating": 4.3,
-        "specialty": "Modern fusion, premium wood-fired pizzas, and outdoor ambiance."
-    },
-    {
-        "name": "Yums Cafe",
-        "location": "Kiwatule Rd, Ntinda",
-        "cuisine": "Italian, Barbecue & Local Fusion",
-        "price_range": "UGX 40,000 - 60,000",
-        "rating": 4.5,
-        "specialty": "Chicken tikka masala and photogenic floral decor vibes."
-    },
-    {
-        "name": "La Casita Restaurant & Bar",
-        "location": "Ntinda II Rd, Nakawa",
-        "cuisine": "Korean & Japanese",
-        "price_range": "UGX 40,000 - 120,000",
-        "rating": 4.3,
-        "specialty": "Authentic Bulgogi, Kimbap, and scenic hilltop breeze views."
-    },
-    {
-        "name": "Middle East Restaurant",
-        "location": "Kira Rd, Naguru",
-        "cuisine": "Middle Eastern",
-        "price_range": "UGX 40,000 - 120,000",
-        "rating": 4.3,
-        "specialty": "Chicken shawarma, falafel, hummus, and 24-hour service."
-    }
-]
-
+logger = logging.getLogger(__name__)
 
 def search_restaurants_by_area(area: str) -> List[Dict[str, Any]]:
     """
@@ -44,9 +14,15 @@ def search_restaurants_by_area(area: str) -> List[Dict[str, Any]]:
     Args:
         area: The neighborhood or district to filter by (e.g., 'Nakawa', 'Naguru', 'Ntinda').
     """
-    results = [r for r in RESTAURANT_DB if area.lower() in r["location"].lower()]
-    return results if results else [{"message": f"No listed venues found specifically matching '{area}'."}]
 
+    area_coords = get_location_coordinates(area)
+
+    if not area_coords:
+        logger.warning("Could not resolve coordinates.")
+        return []
+    lat, lon = area_coords
+    restaurants = search_foursquare_restaurants(lat, lon)
+    return restaurants
 
 def filter_by_cuisine(restaurants: List[Dict[str, Any]], cuisine: str) -> List[Dict[str, Any]]:
     """
@@ -56,9 +32,9 @@ def filter_by_cuisine(restaurants: List[Dict[str, Any]], cuisine: str) -> List[D
         restaurants: A list of restaurant dictionaries.
         cuisine: The type of food desired (e.g., 'Korean', 'Pizza', 'Middle Eastern').
     """
-    # Simple check to see if the cuisine keyword exists in the restaurant entry
-    filtered = [r for r in restaurants if "cuisine" in r and cuisine.lower() in r["cuisine"].lower()]
-    return filtered if filtered else [{"message": f"No options matching the cuisine '{cuisine}' in this subset."}]
+    cuisines = extract_cuisines(restaurants)
+    filtered = [r for r in restaurants if cuisine in cuisines]
+    return filtered
 
 
 AVAILABLE_TOOLS = {

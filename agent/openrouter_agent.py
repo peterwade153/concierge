@@ -1,9 +1,10 @@
 import os
+import re
 import json
-
 from typing import Optional
 
 from openai import OpenAI
+
 from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 from agent.schema import RestaurantRecommendations
 
@@ -25,14 +26,39 @@ class RestaurantAgent:
             "restaurants based strictly on area and food type parameters. Always prioritize "
             "using your local search tools over your internal pre-trained memory. \n\n"
             "CRITICAL: You MUST respond strictly in raw JSON adhering to this schema:\n"
-            f"{json.dumps(RestaurantRecommendations.model_json_schema(), indent=2)}"
+            "1. You MUST output ONLY raw, valid JSON. No conversational text.\n"
+            "2. Do NOT wrap your output in markdown blocks (DO NOT use ```json or ```).\n"
+            "3. Your response MUST begin with the opening brace '{' and end with the closing brace '}'.\n"
+            "4. Adhere strictly to this JSON Schema:\n"
+            f"{json.dumps(RestaurantRecommendations.model_json_schema())}"
         )
 
         self.tools = list(TOOL_SCHEMAS.values())
 
-        self.messages = [
-            {"role": "system", "content": self.system_instruction}
-        ]
+        self.messages = [{"role": "system", "content": self.system_instruction}]
+        return
+
+    def _extract_and_parse_json(self, raw_text: str) -> Optional[RestaurantRecommendations]:
+        """Sanitizes LLM response text from markdown or stray wrappers and parses into Pydantic model."""
+        if not raw_text:
+            return None
+
+        text = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", raw_text.strip(), flags=re.DOTALL)
+
+        if not text.startswith("{"):
+            if not text.startswith('"'):
+                text = '"' + text
+            text = "{" + text
+        if not text.endswith("}"):
+            text = text + "}"
+
+        try:
+            data = json.loads(text)
+            return RestaurantRecommendations.model_validate(data)
+        except Exception as e:
+            print(f"❌ [Parsing Error]: Could not validate model payload: {e}")
+            print(f"Raw response text was:\n{raw_text}")
+            return None
 
     def ask(self, user_query: str) -> Optional[RestaurantRecommendations]:
         try:
@@ -62,7 +88,6 @@ class RestaurantAgent:
                     tool_name = tool_call.function.name
                     tool_args = json.loads(tool_call.function.arguments or "{}")
 
-                    print(f"🔍 [Agent Action]: Invoking local tool '{tool_name}' with arguments: {tool_args}")
 
                     if tool_name in AVAILABLE_TOOLS:
                         tool_output = AVAILABLE_TOOLS[tool_name](**tool_args)
@@ -87,20 +112,17 @@ class RestaurantAgent:
                 response_message = response.choices[0].message
 
             final_text = response_message.content
-            if final_text is None:
-                return None
-
-            try:
-                result = RestaurantRecommendations.model_validate_json(final_text)
-            except Exception as e:
-                print(f'Exception - {e}')
-                return None
+            print('-----***_______')
+            print(final_text)
+            print('-----***_______')
+            result = self._extract_and_parse_json(final_text)
+            if result is None:
+                return
 
             self.messages.append({"role": "assistant", "content": final_text})
-
             print(f"🤖 [Agent Recommendation]:\n{result.model_dump_json(indent=2)}")
             return result
 
         except Exception as e:
-            print(f"Error occurred during OpenRouter request: {e}")
+            print(f"Error occurred during API request: {e}")
         return None
