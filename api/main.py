@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 
-from agent.openrouter_agent import RestaurantAgent
+from agent.agent import RestaurantAgent
 from api.schema import RecommendRequest, RecommendResponse
 
 

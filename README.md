@@ -1,4 +1,4 @@
-# Concierge
+# Concierge-ai
 
 A Restaurant Recommendation Agent, to recommend fine dining spots in specific neighborhood. 
 Uses Nominatim to get Location Coordinates, and FourSquare to look up restaurants with those Coordinates in a given radius.

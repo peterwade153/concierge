@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+
 class RestaurantDetails(BaseModel):
     name: str = Field(description="The full name of the restaurant.")
     location: str = Field(description="The physical street address and neighborhood area.")

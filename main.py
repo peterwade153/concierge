@@ -1,6 +1,6 @@
 import os 
 
-from agent.openrouter_agent import RestaurantAgent as RA
+from agent.agent import RestaurantAgent as RA
 
 
 if __name__ == "__main__":
