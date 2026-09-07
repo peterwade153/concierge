@@ -68,3 +68,8 @@ sample response
 }
 
 ```
+
+## Run Tests
+```bash
+    pytest
+```
