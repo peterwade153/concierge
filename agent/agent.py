@@ -9,6 +9,29 @@ from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 from agent.schema import RestaurantRecommendations
 
 
+def extract_and_parse_json(raw_text: str) -> Optional[RestaurantRecommendations]:
+        """Sanitizes LLM response text from markdown or stray wrappers and parses into Pydantic model."""
+        if not raw_text:
+            return None
+
+        text = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", raw_text.strip(), flags=re.DOTALL)
+
+        if not text.startswith("{"):
+            if not text.startswith('"'):
+                text = '"' + text
+            text = "{" + text
+        if not text.endswith("}"):
+            text = text + "}"
+
+        try:
+            data = json.loads(text)
+            return RestaurantRecommendations.model_validate(data)
+        except Exception as e:
+            print(f"❌ [Parsing Error]: Could not validate model payload: {e}")
+            print(f"Raw response text was:\n{raw_text}")
+            return None
+
+
 class RestaurantAgent:
     def __init__(self):
 
@@ -37,28 +60,6 @@ class RestaurantAgent:
 
         self.messages = [{"role": "system", "content": self.system_instruction}]
         return
-
-    def _extract_and_parse_json(self, raw_text: str) -> Optional[RestaurantRecommendations]:
-        """Sanitizes LLM response text from markdown or stray wrappers and parses into Pydantic model."""
-        if not raw_text:
-            return None
-
-        text = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", raw_text.strip(), flags=re.DOTALL)
-
-        if not text.startswith("{"):
-            if not text.startswith('"'):
-                text = '"' + text
-            text = "{" + text
-        if not text.endswith("}"):
-            text = text + "}"
-
-        try:
-            data = json.loads(text)
-            return RestaurantRecommendations.model_validate(data)
-        except Exception as e:
-            print(f"❌ [Parsing Error]: Could not validate model payload: {e}")
-            print(f"Raw response text was:\n{raw_text}")
-            return None
 
     def ask(self, user_query: str) -> Optional[RestaurantRecommendations]:
         try:
@@ -112,7 +113,7 @@ class RestaurantAgent:
                 response_message = response.choices[0].message
 
             final_text = response_message.content
-            result = self._extract_and_parse_json(final_text)
+            result = extract_and_parse_json(final_text)
             if result is None:
                 return
 
