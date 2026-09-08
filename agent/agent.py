@@ -9,27 +9,45 @@ from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 from agent.schema import RestaurantRecommendations
 
 
+def _parse_recommendation(text: str,) -> Optional[RestaurantRecommendations]:
+    try:
+        data = json.loads(text)
+        return RestaurantRecommendations.model_validate(data)
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
 def extract_and_parse_json(raw_text: str) -> Optional[RestaurantRecommendations]:
         """Sanitizes LLM response text from markdown or stray wrappers and parses into Pydantic model."""
         if not raw_text:
             return None
 
-        text = re.sub(r"^```[a-zA-Z]*\s*|\s*```$", "", raw_text.strip(), flags=re.DOTALL)
+        text = raw_text.strip()
 
-        if not text.startswith("{"):
-            if not text.startswith('"'):
-                text = '"' + text
-            text = "{" + text
-        if not text.endswith("}"):
-            text = text + "}"
+        # Remove markdown fences
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.IGNORECASE,).strip()
 
-        try:
-            data = json.loads(text)
-            return RestaurantRecommendations.model_validate(data)
-        except Exception as e:
-            print(f"❌ [Parsing Error]: Could not validate model payload: {e}")
-            print(f"Raw response text was:\n{raw_text}")
-            return None
+        # First attempt: exact response
+        result = _parse_recommendation(text)
+        if result:
+            return result
+
+        # Known failure: missing opening brace
+        if text and not text.startswith("{"):
+            repaired = "{" + text
+
+            result = _parse_recommendation(repaired)
+            if result:
+                return result
+
+        # Known failure: missing closing brace
+        if text.startswith("{") and not text.endswith("}"):
+            repaired = text + "}"
+
+            result = _parse_recommendation(repaired)
+            if result:
+                return result
+        return None
 
 
 class RestaurantAgent:
