@@ -1,12 +1,20 @@
 import os
 import re
 import json
+import logging
 from typing import Optional
 
 from openai import OpenAI
 
 from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 from agent.schema import RestaurantRecommendations
+
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[logging.StreamHandler()],
+)
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_recommendation(text: str,) -> Optional[RestaurantRecommendations]:
@@ -50,6 +58,24 @@ def extract_and_parse_json(raw_text: str) -> Optional[RestaurantRecommendations]
         return None
 
 
+def log_token_usage(usage, context="API Request"):
+    """Helper function to log token usage metrics cleanly."""
+    if not usage:
+        return
+    
+    logger.info("[%s] Prompt Tokens: %d", context, usage.prompt_tokens)
+    logger.info("[%s] Completion Tokens: %d", context, usage.completion_tokens)
+    logger.info("[%s] Total Tokens: %d", context, usage.total_tokens)
+    
+    if hasattr(usage, "prompt_tokens_details") and usage.prompt_tokens_details:
+        cached = getattr(usage.prompt_tokens_details, "cached_tokens", 0)
+        logger.info("[%s] Cached Prompt Tokens: %d", context, cached)
+        
+    if hasattr(usage, "completion_tokens_details") and usage.completion_tokens_details:
+        reasoning = getattr(usage.completion_tokens_details, "reasoning_tokens", 0)
+        logger.info("[%s] Reasoning Tokens: %d", context, reasoning)
+
+
 class RestaurantAgent:
     def __init__(self):
 
@@ -60,7 +86,8 @@ class RestaurantAgent:
             base_url="https://openrouter.ai/api/v1",
             api_key=os.environ.get("OPENROUTER_API_KEY"),
         )
-        self.model_name = "meta-llama/llama-4-scout"
+        self.model_name = "nex-agi/nex-n2.5-pro:free"
+        # self.model_name = "meta-llama/llama-4-scout"
 
         self.system_instruction = (
             "You are a local culinary concierge agent. Your goal is to recommend the best "
@@ -91,6 +118,9 @@ class RestaurantAgent:
                 temperature=0.1,
                 response_format={"type": "json_object"},
             )
+
+            log_token_usage(response.usage, context="Ask - Initial Request")
+            step = 1
 
             response_message = response.choices[0].message
 
@@ -128,6 +158,10 @@ class RestaurantAgent:
                     temperature=0.1,
                     response_format={"type": "json_object"},
                 )
+                # Log usage for each tool step execution
+                log_token_usage(response.usage, context=f"Ask - Tool Loop Step {step}")
+                step += 1
+
                 response_message = response.choices[0].message
 
             final_text = response_message.content
