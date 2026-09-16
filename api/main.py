@@ -1,3 +1,4 @@
+from functools import lru_cache
 from fastapi import FastAPI, HTTPException
 
 from agent.agent import RestaurantAgent
@@ -11,12 +12,16 @@ app = FastAPI(title="Concierge API", version="1.0.0")
 def health_check():
     return {"status": "ok", "service": "Concierge API"}
 
+@lru_cache(maxsize=128)
+def get_cached_recommendation(query: str):
+    agent = RestaurantAgent()
+    return agent.ask(query)
 
 @app.post("/recommend", response_model=RecommendResponse)
 def recommend(request: RecommendRequest):
     try:
-        agent = RestaurantAgent()
-        result = agent.ask(request.query)
+        normalized_query = request.query.strip().lower()
+        result = get_cached_recommendation(normalized_query)
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
