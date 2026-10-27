@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Frontend (React + Vite) ---
+node_modules/
+dist/
+.env.local
+.env.development
+.env.production
+.eslintcache
+.DS_Store
+
+# --- Docker ---
+docker-compose.override.yml
+Dockerfile.override
