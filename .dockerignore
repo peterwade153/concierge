@@ -1,0 +1,32 @@
+# Secrets — never ship into the image.
+.env
+.env.sample
+
+# Python cruft.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Git metadata.
+.git/
+.gitignore
+
+# Node / frontend build artifacts (not needed by the backend image).
+frontend/
+Dockerfile.frontend
+docker-compose.yml
+nginx.conf
+node_modules/
+dist/
+package*.json
+
+# Editor / OS noise.
+.DS_Store
+.idea/
+.vscode/
