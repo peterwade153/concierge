@@ -86,8 +86,8 @@ class RestaurantAgent:
             base_url="https://openrouter.ai/api/v1",
             api_key=os.environ.get("OPENROUTER_API_KEY"),
         )
-        self.model_name = "nex-agi/nex-n2.5-pro:free"
         # self.model_name = "meta-llama/llama-4-scout"
+        self.model_name = "xingchen-agi/xing4.0-29b-a4b:free"
 
         self.system_instruction = (
             "You are a local culinary concierge agent. Your goal is to recommend the best "

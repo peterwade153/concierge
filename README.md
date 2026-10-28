@@ -14,7 +14,7 @@ Uses Nominatim to get Location Coordinates, and FourSquare to look up restaurant
 
 3. Install dependencies 
    ```
-    pip install -r requirements.txt
+    pip install -r backend/requirements.txt
    ```
 
 4. Create a `.env` file from the `.env.sample` file. 
@@ -24,7 +24,7 @@ Uses Nominatim to get Location Coordinates, and FourSquare to look up restaurant
 
 ## Start Server
 ```bash
-    python api/run.py
+    python backend/api/run.py
 ```
 Post Request endpoint - `/recommend`
 
@@ -68,6 +68,35 @@ sample response
 }
 
 ```
+
+## Frontend (React SPA)
+
+A small Vite + React + TypeScript + Tailwind UI lives in `frontend/`.
+
+### Run locally
+```bash
+cd frontend
+npm install
+npm run dev      # http://localhost:5173 — API is proxied to the backend on :8000
+npm run typecheck
+```
+
+### Build for production
+```bash
+cd frontend
+npm run build    # outputs dist/
+```
+
+## Docker
+
+The stack is split into two containers: a Python backend and an nginx-served frontend.
+
+### Run with Docker Compose
+```bash
+cp .env.sample .env   # then fill in OPENROUTER_API_KEY and FOURSQUARE_API_KEY
+docker compose up --build
+```
+Open `http://localhost` — the frontend proxies `/api/` requests to the backend.
 
 ## Run Tests
 ```bash

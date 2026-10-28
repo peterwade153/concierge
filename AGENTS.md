@@ -6,16 +6,19 @@ Uses Nominatim API to get Location Coordinates, and FourSquare API to look up re
 ## Project Setup and Management
 
 - Python version: 3.11.
-- Dependency management: `pip` and `requirements.txt` file.
+- Dependency management: `pip` and `backend/requirements.txt` file.
 - Add a dependency with `pip install <package>`.
-- Run the app with `python api/run.py`.
+- Run the app with `python backend/api/run.py`.
+- Run tests with `pytest` (works from the repo root or inside `backend/`).
+- Run the full stack (backend + React frontend) with `docker compose up --build`.
 - Branch from `master` as `feature/<name>` and use Conventional Commits.
 - Stage changes for review. Don't commit to `master` or push without being asked.
 
 ## Architecture Overview
 
-- **agent** : Main AI restaurant recommendation module
-- **api** : REST APIs to return the AI restaurant recommendations 
+- **backend/** : Python application — the AI restaurant recommendation agent (`agent/`) and the FastAPI REST API (`api/`).
+- **frontend/** : React + Vite + TypeScript SPA served by nginx in production.
+- **docker-compose.yml** : orchestrates the backend and frontend containers. 
 
 ## Coding Conventions
 

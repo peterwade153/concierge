@@ -1,4 +1,3 @@
-from functools import lru_cache
 from fastapi import FastAPI, HTTPException
 
 from agent.agent import RestaurantAgent
@@ -12,12 +11,35 @@ app = FastAPI(title="Concierge API", version="1.0.0")
 def health_check():
     return {"status": "ok", "service": "Concierge API"}
 
-@lru_cache(maxsize=128)
-def get_cached_recommendation(query: str):
-    agent = RestaurantAgent()
-    return agent.ask(query)
 
-@app.post("/recommend", response_model=RecommendResponse)
+_cache: dict[str, object] = {}
+_CACHE_MAXSIZE = 128
+
+
+def get_cached_recommendation(query: str):
+    """Run the agent for a query and cache successful results.
+
+    Only non-``None`` results are cached, so a transient failure (rate
+    limit, network blip) is retryable instead of becoming a permanent
+    502. Cache is a plain dict with simple FIFO eviction; ``lru_cache``
+    is unsuitable because it memoizes ``None`` as well.
+    """
+    cached = _cache.get(query)
+    if cached is not None:
+        return cached
+
+    agent = RestaurantAgent()
+    result = agent.ask(query)
+
+    if result is not None:
+        if len(_cache) >= _CACHE_MAXSIZE:
+            _cache.pop(next(iter(_cache)))
+        _cache[query] = result
+
+    return result
+
+
+@app.post("/api/recommend", response_model=RecommendResponse)
 def recommend(request: RecommendRequest):
     try:
         normalized_query = request.query.strip().lower()
