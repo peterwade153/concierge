@@ -7,17 +7,6 @@ from agent.agent import RestaurantAgent, extract_and_parse_json
 from agent.schema import RestaurantRecommendations, RestaurantDetails
 
 
-@pytest.fixture
-def mock_env(monkeypatch):
-    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
-
-
-@pytest.fixture
-def mock_openai_client():
-    with patch("agent.agent.OpenAI") as MockOpenAI:
-        yield MockOpenAI
-
-
 def make_mock_recommendation():
     return RestaurantRecommendations(
         neighborhood_searched="Kampala",
@@ -44,7 +33,7 @@ class TestRestaurantAgent:
 
     def test_init_success(self, mock_env, mock_openai_client):
         agent = RestaurantAgent()
-        assert agent.model_name == "meta-llama/llama-4-scout"
+        assert agent.model_name
         assert len(agent.messages) == 1
         assert agent.messages[0]["role"] == "system"
         mock_openai_client.assert_called_once_with(

@@ -39,7 +39,7 @@ class TestRecommendEndpoint:
         mock_agent_instance = mock_restaurant_agent.return_value
         mock_agent_instance.ask.return_value = mock_result
 
-        response = client.post("/recommend", json={"query": "best Swahili food in Kampala"})
+        response = client.post("/api/recommend", json={"query": "best Swahili food in Kampala"})
 
         assert response.status_code == 200
         data = response.json()
@@ -49,7 +49,7 @@ class TestRecommendEndpoint:
 
     def test_recommend_agent_raises_value_error(self, mock_restaurant_agent):
         mock_restaurant_agent.side_effect = ValueError("Missing API key")
-        response = client.post("/recommend", json={"query": "best pizza"})
+        response = client.post("/api/recommend", json={"query": "best pizza"})
 
         assert response.status_code == 500
         assert response.json()["detail"] == "Missing API key"
@@ -58,7 +58,7 @@ class TestRecommendEndpoint:
         mock_agent_instance = mock_restaurant_agent.return_value
         mock_agent_instance.ask.return_value = None
 
-        response = client.post("/recommend", json={"query": "best sushi"})
+        response = client.post("/api/recommend", json={"query": "best sushi"})
 
         assert response.status_code == 502
         assert response.json()["detail"] == "Agent returned no recommendation."
