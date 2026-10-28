@@ -1,4 +1,3 @@
-name: concierge
 services:
   backend:
     build:
@@ -10,12 +9,6 @@ services:
       - PYTHONUNBUFFERED=1
     ports:
       - "8000:8000"
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
     restart: unless-stopped
 
   frontend:
@@ -23,8 +16,7 @@ services:
       context: ./frontend
       dockerfile: ../Dockerfile.frontend
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     ports:
       - "80:80"
     restart: unless-stopped

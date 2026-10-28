@@ -39,7 +39,7 @@ def get_cached_recommendation(query: str):
     return result
 
 
-@app.post("/recommend", response_model=RecommendResponse)
+@app.post("/api/recommend", response_model=RecommendResponse)
 def recommend(request: RecommendRequest):
     try:
         normalized_query = request.query.strip().lower()
