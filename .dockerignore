@@ -18,10 +18,6 @@ htmlcov/
 .gitignore
 
 # Node / frontend build artifacts (not needed by the backend image).
-frontend/
-Dockerfile.frontend
-docker-compose.yml
-nginx.conf
 node_modules/
 dist/
 package*.json
