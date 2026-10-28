@@ -7,7 +7,6 @@ dist/
 ../backend/Dockerfile
 ../backend/.dockerignore
 ../docker-compose.yml
-../Dockerfile.frontend
 ../README.md
 ../AGENTS.md
 ../.dockerignore
