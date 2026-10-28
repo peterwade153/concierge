@@ -3,6 +3,8 @@
 A Restaurant Recommendation Agent, to recommend fine dining spots in specific neighborhood. 
 Uses Nominatim to get Location Coordinates, and FourSquare to look up restaurants with those Coordinates in a given radius.
 
+![Dashboard](<Screenshot 2026-10-28 at 16.05.29.png>)
+
 ### Installation
 
 1. Create and activate a virtual environment and Clone the project `https://github.com/peterwade153/concierge.git`
@@ -26,12 +28,12 @@ Uses Nominatim to get Location Coordinates, and FourSquare to look up restaurant
 ```bash
     python backend/api/run.py
 ```
-Post Request endpoint - `/recommend`
+Post Request endpoint - `/api/recommend`
 
 sample payload
 ``` json
    {
-      "query": "Find me a good spot for Asian food around the Ntinda or Nakawa neighborhood."
+      "query": "Find me a good spot for Asian food around the Kololo neighborhood."
    }
 ```
 
@@ -87,6 +89,12 @@ cd frontend
 npm run build    # outputs dist/
 ```
 
+### Run tests
+```bash
+cd frontend
+npm test
+```
+
 ## Docker
 
 The stack is split into two containers: a Python backend and an nginx-served frontend.
@@ -98,7 +106,7 @@ docker compose up --build
 ```
 Open `http://localhost` — the frontend proxies `/api/` requests to the backend.
 
-## Run Tests
+## Run API Tests
 ```bash
     pytest
 ```
