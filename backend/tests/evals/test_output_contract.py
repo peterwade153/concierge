@@ -7,6 +7,9 @@ depend on. These tests are deterministic and require no network access.
 
 import json
 
+import pytest
+from pydantic import ValidationError
+
 from agent.schema import RestaurantRecommendations
 
 from .fixtures import make_recommendation, recommendation_json
@@ -50,9 +53,7 @@ class TestOutputContract:
         assert result.recommended_spots == []
 
     def test_cuisine_list_must_not_be_none(self):
-        import pytest
-
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             RestaurantRecommendations(
                 neighborhood_searched="X",
                 recommended_spots=[

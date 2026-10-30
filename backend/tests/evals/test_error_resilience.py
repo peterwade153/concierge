@@ -11,7 +11,7 @@ import pytest
 
 from agent.agent import RestaurantAgent
 
-from .fixtures import mock_response, recommendation_json
+from .fixtures import mock_response
 
 
 class TestErrorResilience:

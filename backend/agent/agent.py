@@ -1,13 +1,12 @@
-import os
-import re
 import json
 import logging
-from typing import Optional
+import os
+import re
 
 from openai import OpenAI
 
-from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 from agent.schema import RestaurantRecommendations
+from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def _parse_recommendation(text: str,) -> Optional[RestaurantRecommendations]:
+def _parse_recommendation(text: str,) -> RestaurantRecommendations | None:
     try:
         data = json.loads(text)
         return RestaurantRecommendations.model_validate(data)
@@ -25,7 +24,7 @@ def _parse_recommendation(text: str,) -> Optional[RestaurantRecommendations]:
         return None
 
 
-def extract_and_parse_json(raw_text: str) -> Optional[RestaurantRecommendations]:
+def extract_and_parse_json(raw_text: str) -> RestaurantRecommendations | None:
         """Sanitizes LLM response text from markdown or stray wrappers and parses into Pydantic model."""
         if not raw_text:
             return None
@@ -62,15 +61,15 @@ def log_token_usage(usage, context="API Request"):
     """Helper function to log token usage metrics cleanly."""
     if not usage:
         return
-    
+
     logger.info("[%s] Prompt Tokens: %d", context, usage.prompt_tokens)
     logger.info("[%s] Completion Tokens: %d", context, usage.completion_tokens)
     logger.info("[%s] Total Tokens: %d", context, usage.total_tokens)
-    
+
     if hasattr(usage, "prompt_tokens_details") and usage.prompt_tokens_details:
         cached = getattr(usage.prompt_tokens_details, "cached_tokens", 0)
         logger.info("[%s] Cached Prompt Tokens: %d", context, cached)
-        
+
     if hasattr(usage, "completion_tokens_details") and usage.completion_tokens_details:
         reasoning = getattr(usage.completion_tokens_details, "reasoning_tokens", 0)
         logger.info("[%s] Reasoning Tokens: %d", context, reasoning)
@@ -106,7 +105,7 @@ class RestaurantAgent:
         self.messages = [{"role": "system", "content": self.system_instruction}]
         return
 
-    def ask(self, user_query: str) -> Optional[RestaurantRecommendations]:
+    def ask(self, user_query: str) -> RestaurantRecommendations | None:
         try:
             print(f"\n[User Query]: {user_query}")
             self.messages.append({"role": "user", "content": user_query})

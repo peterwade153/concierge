@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from agent.agent import RestaurantAgent, extract_and_parse_json
-from agent.schema import RestaurantRecommendations, RestaurantDetails
+from agent.schema import RestaurantDetails, RestaurantRecommendations
 
 
 def make_mock_recommendation():
@@ -58,7 +58,7 @@ class TestRestaurantAgent:
 
     def test_extract_and_parse_malformed_json_fallback(self):
         data = make_mock_recommendation().model_dump()
-        
+
         raw_missing_brace = json.dumps(data)[1:]
         result = extract_and_parse_json(raw_missing_brace)
         assert isinstance(result, RestaurantRecommendations)

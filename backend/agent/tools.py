@@ -1,16 +1,15 @@
-from typing import Dict, List, Any
 import logging
+from typing import Any
 
+from agent.utils.foursquare import extract_cuisines, search_foursquare_restaurants
 from agent.utils.nominatim import get_location_coordinates
-from agent.utils.foursquare import search_foursquare_restaurants, extract_cuisines
-
 
 logger = logging.getLogger(__name__)
 
-def search_restaurants_by_area(area: str) -> List[Dict[str, Any]]:
+def search_restaurants_by_area(area: str) -> list[dict[str, Any]]:
     """
     Searches for highly-rated local restaurants within a specific neighborhood or division.
-    
+
     Args:
         area: The neighborhood or district to filter by (e.g., 'Nakawa', 'Naguru', 'Ntinda').
     """
@@ -24,10 +23,10 @@ def search_restaurants_by_area(area: str) -> List[Dict[str, Any]]:
     restaurants = search_foursquare_restaurants(lat, lon)
     return restaurants
 
-def filter_by_cuisine(restaurants: List[Dict[str, Any]], cuisine: str) -> List[Dict[str, Any]]:
+def filter_by_cuisine(restaurants: list[dict[str, Any]], cuisine: str) -> list[dict[str, Any]]:
     """
     Filters a list of restaurants to only include those serving a specific type of food.
-    
+
     Args:
         restaurants: A list of restaurant dictionaries.
         cuisine: The type of food desired (e.g., 'Korean', 'Pizza', 'Middle Eastern').

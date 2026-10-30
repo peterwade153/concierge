@@ -1,0 +1,9 @@
+export default {
+  $schema: "https://json.schemastore.org/prettierrc",
+  semi: true,
+  singleQuote: false,
+  tabWidth: 2,
+  trailingComma: "all",
+  printWidth: 100,
+  endOfLine: "lf",
+};
