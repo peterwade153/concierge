@@ -1,12 +1,12 @@
-import requests
 import logging
 import os
-from typing import List, Dict
+
+import requests
 
 logger = logging.getLogger(__name__)
 
 
-def search_foursquare_restaurants(lat: float, lon: float, radius: int = 8000) -> List[Dict]:
+def search_foursquare_restaurants(lat: float, lon: float, radius: int = 8000) -> list[dict]:
     """Fetch nearby restaurants using Foursquare Places API with logging."""
 
     if not os.environ.get("FOURSQUARE_API_KEY"):
@@ -24,26 +24,26 @@ def search_foursquare_restaurants(lat: float, lon: float, radius: int = 8000) ->
         "Accept": "application/json",
         "Authorization": os.environ.get("FOURSQUARE_API_KEY")
     }
-    
+
     logger.info(f"Querying Foursquare for restaurants near ({lat}, {lon}) within {radius}m...")
-    
+
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
 
         if response.status_code == 429:
             logger.error("Foursquare API rate limit exceeded.")
             return []
-            
+
         response.raise_for_status()
-        
+
         results = response.json().get("results", [])
         if not results:
             logger.info("Foursquare returned 0 restaurants for this location.")
         else:
             logger.info(f"Found {len(results)} restaurants via Foursquare.")
-            
+
         return results
-        
+
     except requests.exceptions.Timeout:
         logger.error("Foursquare API request timed out.")
     except requests.exceptions.HTTPError as http_err:
@@ -56,7 +56,7 @@ def search_foursquare_restaurants(lat: float, lon: float, radius: int = 8000) ->
         logger.error(f"Network error communicating with Foursquare: {req_err}")
     except Exception as e:
         logger.error(f"Unexpected error querying Foursquare: {e}")
-        
+
     return []
 
 
@@ -127,7 +127,7 @@ def extract_cuisines(place_data: dict) -> list[str]:
     }
     """
     cuisines = []
-    
+
     for category in place_data.get("categories", []):
         cat_name = category.get("name", "")
         if "Restaurant" in cat_name and cat_name != "Restaurant":

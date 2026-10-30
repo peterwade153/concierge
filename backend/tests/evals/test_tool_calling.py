@@ -5,7 +5,7 @@ until the model returns a final text response. These tests mock the OpenAI
 client and verify the loop drives the right tools and terminates.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from agent.agent import RestaurantAgent
 

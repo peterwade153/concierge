@@ -1,11 +1,10 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
+from agent.schema import RestaurantDetails, RestaurantRecommendations
 from api.main import app
-from agent.schema import RestaurantRecommendations, RestaurantDetails
-
 
 client = TestClient(app)
 
