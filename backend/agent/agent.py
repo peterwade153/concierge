@@ -7,6 +7,7 @@ from openai import OpenAI
 
 from agent.schema import RestaurantRecommendations
 from agent.tools import AVAILABLE_TOOLS, TOOL_SCHEMAS
+from agent.utils.client import resolve_request_timeout
 
 logging.basicConfig(
     level=logging.INFO,
@@ -84,6 +85,7 @@ class RestaurantAgent:
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=os.environ.get("OPENROUTER_API_KEY"),
+            timeout=resolve_request_timeout(),
         )
         # self.model_name = "meta-llama/llama-4-scout"
         self.model_name = "xingchen-agi/xing4.0-29b-a4b:free"
@@ -173,5 +175,8 @@ class RestaurantAgent:
             return result
 
         except Exception as e:
-            print(f"Error occurred during API request: {e}")
+            if isinstance(e, TimeoutError) or "timeout" in str(e).lower():
+                logger.error("OpenAI request timed out: %s", e)
+            else:
+                logger.error("Error occurred during API request: %s", e)
         return None
