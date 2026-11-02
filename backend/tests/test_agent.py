@@ -39,6 +39,7 @@ class TestRestaurantAgent:
         mock_openai_client.assert_called_once_with(
             base_url="https://openrouter.ai/api/v1",
             api_key="test-key",
+            timeout=30.0,
         )
 
     # JSON Parsing Tests
